@@ -1,8 +1,8 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { AuthService } from './auth.service';
-import { AuthConfig, AuthConfigService, AuthClientConfig } from './auth.config';
-import { Auth0ClientService, Auth0ClientFactory } from './auth.client';
+import { AuthClientConfig, AuthConfig, AuthConfigService } from './auth.config';
 import { AuthGuard } from './auth.guard';
+import { AuthClient, Auth0ClientFactory, Auth0ClientService } from './auth.client';
 
 @NgModule()
 export class AuthModule {
@@ -26,6 +26,7 @@ export class AuthModule {
           useFactory: Auth0ClientFactory.createClient,
           deps: [AuthClientConfig],
         },
+        AuthClient
       ],
     };
   }

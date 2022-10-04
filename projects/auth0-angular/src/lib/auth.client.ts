@@ -1,7 +1,25 @@
-import { InjectionToken, VERSION } from '@angular/core';
+import { Inject, Injectable, InjectionToken, VERSION } from '@angular/core';
 import { Auth0Client } from '@auth0/auth0-spa-js';
-import { AuthClientConfig } from './auth.config';
+import { AuthClientConfig, AuthConfig } from './auth.config';
 import useragent from '../useragent';
+
+const createClient = (config: AuthConfig) => {
+  const { redirectUri, clientId, maxAge, httpInterceptor, ...rest } = config;
+
+  return new Auth0Client({
+    redirect_uri: redirectUri || window.location.origin,
+    client_id: clientId,
+    max_age: maxAge,
+    ...rest,
+    auth0Client: {
+      name: useragent.name,
+      version: useragent.version,
+      env: {
+        'angular/core': VERSION.full,
+      },
+    },
+  });
+}
 
 export class Auth0ClientFactory {
   static createClient(configFactory: AuthClientConfig): Auth0Client {
@@ -13,21 +31,31 @@ export class Auth0ClientFactory {
       );
     }
 
-    const { redirectUri, clientId, maxAge, httpInterceptor, ...rest } = config;
+    return createClient(config);
+  }
+}
 
-    return new Auth0Client({
-      redirect_uri: redirectUri || window.location.origin,
-      client_id: clientId,
-      max_age: maxAge,
-      ...rest,
-      auth0Client: {
-        name: useragent.name,
-        version: useragent.version,
-        env: {
-          'angular/core': VERSION.full,
-        },
-      },
-    });
+@Injectable({ providedIn: 'root' })
+export class AuthClient {
+  private client?: Auth0Client;
+
+  constructor(@Inject(Auth0ClientService) auth0Client: Auth0Client) {
+    this.client = auth0Client;
+  }
+
+  /**
+   * Create a new instance of Auth0Client and track it.
+   * @param config The configuration used to initialize the Auth0Client
+   */
+  createClient(config: AuthConfig): void {
+    this.client = createClient(config);
+  }
+
+  /**
+   * Gets the current client
+   */
+  get(): Auth0Client {
+    return this.client as Auth0Client;
   }
 }
 

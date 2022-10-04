@@ -15,8 +15,8 @@ import {
 } from './auth.config';
 import { throwError } from 'rxjs';
 import { Auth0Client } from '@auth0/auth0-spa-js';
-import { Auth0ClientService } from './auth.client';
 import { AuthState } from './auth.state';
+import { Auth0ClientService, AuthClient } from './auth.client';
 
 // NOTE: Read Async testing: https://github.com/angular/angular/issues/25733#issuecomment-636154553
 
@@ -24,6 +24,7 @@ describe('The Auth HTTP Interceptor', () => {
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
   let auth0Client: Auth0Client;
+  let authClient: AuthClient;
   let req: TestRequest;
   let authState: AuthState;
   const testData: Data = { message: 'Hello, world' };
@@ -110,6 +111,7 @@ describe('The Auth HTTP Interceptor', () => {
           provide: Auth0ClientService,
           useValue: auth0Client,
         },
+        AuthClient,
         {
           provide: AuthClientConfig,
           useValue: { get: () => config },
@@ -120,8 +122,10 @@ describe('The Auth HTTP Interceptor', () => {
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
     authState = TestBed.inject(AuthState);
+    authClient = TestBed.inject(AuthClient);
 
     spyOn(authState, 'setError').and.callThrough();
+    spyOn(authClient, 'get').and.returnValue(auth0Client);
   });
 
   afterEach(() => {

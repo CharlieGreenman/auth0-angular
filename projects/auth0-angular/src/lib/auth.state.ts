@@ -1,5 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
-import { Auth0Client } from '@auth0/auth0-spa-js';
+import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   defer,
@@ -17,7 +16,7 @@ import {
   shareReplay,
   switchMap,
 } from 'rxjs/operators';
-import { Auth0ClientService } from './auth.client';
+import { AuthClient } from './auth.client';
 
 /**
  * Tracks the Authentication State for the SDK
@@ -105,12 +104,16 @@ export class AuthState {
     )
   );
 
+  get auth0Client() {
+    return this.authClient.get();
+  }
+
   /**
    * Emits errors that occur during login, or when checking for an active session on startup.
    */
   public readonly error$ = this.errorSubject$.asObservable();
 
-  constructor(@Inject(Auth0ClientService) private auth0Client: Auth0Client) {}
+  constructor(private authClient: AuthClient) {}
 
   /**
    * Update the isLoading state using the provided value

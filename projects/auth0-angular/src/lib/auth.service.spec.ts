@@ -1,6 +1,5 @@
 import { fakeAsync, TestBed } from '@angular/core/testing';
 import { AuthService } from './auth.service';
-import { Auth0ClientService } from './auth.client';
 import {
   Auth0Client,
   IdToken,
@@ -16,8 +15,8 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import { Location } from '@angular/common';
 import { AuthConfig, AuthConfigService } from './auth.config';
+import { AuthClient } from './auth.client';
 import { AuthState } from './auth.state';
 
 /**
@@ -30,6 +29,7 @@ const loaded = (service: AuthService) =>
 
 describe('AuthService', () => {
   let auth0Client: Auth0Client;
+  let authClient: AuthClient;
   let moduleSetup: any;
   let service: AuthService;
   let authConfig: Partial<AuthConfig>;
@@ -45,6 +45,7 @@ describe('AuthService', () => {
       domain: '',
       client_id: '',
     });
+
 
     spyOn(auth0Client, 'handleRedirectCallback').and.resolveTo({});
     spyOn(auth0Client, 'loginWithRedirect').and.resolveTo();
@@ -67,16 +68,20 @@ describe('AuthService', () => {
     moduleSetup = {
       providers: [
         AbstractNavigator,
-        {
-          provide: Auth0ClientService,
-          useValue: auth0Client,
-        },
+        { provide: AuthClient, useValue: { get: () => auth0Client, createClient: () => {} } },
+        { provide: AuthConfigService, useValue: authConfig }
       ],
     };
 
     TestBed.configureTestingModule(moduleSetup);
     service = createService();
     authState = TestBed.inject(AuthState);
+    authClient = TestBed.inject(AuthClient);
+
+    spyOn(authClient, 'get').and.returnValue(
+      auth0Client
+    );
+    spyOn(authClient, 'createClient').and.callFake(() => {});
   });
 
   describe('constructor', () => {
@@ -339,17 +344,22 @@ describe('AuthService', () => {
             useValue: navigator,
           },
           {
-            provide: Auth0ClientService,
-            useValue: auth0Client,
-          },
-          {
             provide: AuthConfigService,
             useValue: authConfig,
           },
+          {
+            provide: AuthClient,
+            useValue: {
+              get: () => auth0Client,
+              createClient: () => {}
+            }
+          }
         ],
       });
 
       window.history.replaceState(null, '', '?code=123&state=456');
+
+      authClient = TestBed.inject(AuthClient);
     });
 
     it('should handle the callback when code and state are available', (done) => {
@@ -738,16 +748,19 @@ describe('AuthService', () => {
             useValue: navigator,
           },
           {
-            provide: Auth0ClientService,
-            useValue: auth0Client,
-          },
-          {
             provide: AuthConfigService,
             useValue: {
               ...authConfig,
               skipRedirectCallback: true,
             },
           },
+          {
+            provide: AuthClient,
+            useValue: {
+              get: () => auth0Client,
+              createClient: () => {}
+            }
+          }
         ],
       });
 
