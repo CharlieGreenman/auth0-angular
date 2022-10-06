@@ -14,6 +14,7 @@ import {
   User,
   GetIdTokenClaimsOptions,
   IdToken,
+  Auth0Client,
 } from '@auth0/auth0-spa-js';
 
 import {
@@ -116,7 +117,7 @@ export class AuthService<TAppState extends AppState = AppState>
       .subscribe();
   }
 
-  get auth0Client() {
+  get auth0Client(): Auth0Client {
     return this.authClient.get();
   }
 

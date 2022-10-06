@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Auth0Client } from '@auth0/auth0-spa-js';
 import {
   BehaviorSubject,
   defer,
@@ -104,7 +105,7 @@ export class AuthState {
     )
   );
 
-  get auth0Client() {
+  get auth0Client(): Auth0Client {
     return this.authClient.get();
   }
 

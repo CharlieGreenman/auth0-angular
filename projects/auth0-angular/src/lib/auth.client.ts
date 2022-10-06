@@ -19,7 +19,7 @@ const createClient = (config: AuthConfig) => {
       },
     },
   });
-}
+};
 
 export class Auth0ClientFactory {
   static createClient(configFactory: AuthClientConfig): Auth0Client {
